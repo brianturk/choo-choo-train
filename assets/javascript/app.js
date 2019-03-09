@@ -53,7 +53,12 @@ $("#add-train-btn").on("click", function (event) {
 var everyMinute = setInterval(function () {
         for (var x = 0; x < trains.length; x++){
             var minutesAway = calcMinutesAway (trains[x].startTime, trains[x].frequency);
-            var nextArrival = moment().add(minutesAway, "minutes");
+            if (minutesAway > trains[x].frequency) {
+                var nextArrival = moment(trains[x].startTime, "HH:mm");
+            } else {
+                var nextArrival = moment().add(minutesAway, "minutes");
+            }
+            
 
             $("#trainNA-" + x).text(nextArrival.format("HH:mm"));
             $("#trainMA-" + x).text(minutesAway);
@@ -83,22 +88,15 @@ function writeRow(childSnapshot) {
     var destination = childSnapshot.val().destination;
     var startTime = childSnapshot.val().startTime;
     var frequency = childSnapshot.val().frequency;
-    
-    // var currentTime = moment();
-    // var startTimeOld = moment(startTime, "HH:mm");
-
-    // if (currentTime.isBefore(startTimeOld)){
-    //     var minutesAway = startTimeOld.diff(moment(currentTime), "minutes");
-    // } else {
-    //     // startTimeOld = moment(startTime, "HH:mm").subtract(1, "years");
-    //     var diffTime = currentTime.diff(moment(startTimeOld), "minutes");
-    //     var tRemainder = diffTime % frequency;
-    //     var minutesAway = frequency - tRemainder;
-    // }
 
     var minutesAway = calcMinutesAway (startTime, frequency);
     
-    var nextArrival = moment().add(minutesAway, "minutes");
+    if (minutesAway > frequency) {
+        var nextArrival = moment(startTime, "HH,mm");
+    } else {
+        var nextArrival = moment().add(minutesAway, "minutes");
+    }
+    
 
     // Create the new row
     var tdTN = $("<td>");
@@ -120,7 +118,9 @@ function writeRow(childSnapshot) {
     tdNA.attr("id","trainNA-" + trainNum);
     tdMA.attr("id","trainMA-" + trainNum);
 
-    var newRow = $("<tr>").append(tdTN, tdD, tdF, tdNA, tdMA);
+    var newRow = $("<tr>")
+
+    newRow.append(tdTN, tdD, tdF, tdNA, tdMA);
 
     // Append the new row to the table
     $("#train-table > tbody").append(newRow);
@@ -137,5 +137,6 @@ function writeRow(childSnapshot) {
 database.ref().on("child_added", function (childSnapshot) {
     writeRow(childSnapshot)
 });
+
 
 
